@@ -1,10 +1,9 @@
-local toolsEquipped = false  -- global flag, sadece 1 kere equip etmek için
+local toolsEquipped = false  -- sadece 1 kere equip etmek için
 
--- Tool grip pos sürekli güncelleme (sadece grip pos, tool.Parent değiştirme yok artık)
 local function constantlyUpdateGripPos()
     RunService.Heartbeat:Connect(function()
         if not targetHead then return end
-        for _, tool in pairs(Character:GetChildren()) do  -- sadece karakterdeki tool'lar
+        for _, tool in pairs(Character:GetChildren()) do
             if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
                 local handle = tool.Handle
                 local gripCFrame = handle.CFrame:ToObjectSpace(targetHead.CFrame)
@@ -14,8 +13,8 @@ local function constantlyUpdateGripPos()
     end)
 end
 
--- Button click eventi
-Button.MouseButton1Click:Connect(function()
+-- MouseButton1Click yerine Activated kullanalım ki mobilde de çalışsın
+Button.Activated:Connect(function()
     local inputText = TextBox.Text
     if inputText == "" then
         warn("Lütfen hedef oyuncu adının bir kısmını yaz.")
@@ -35,12 +34,10 @@ Button.MouseButton1Click:Connect(function()
 
     targetHead = targetPlayer.Character.Head
 
-    -- Sadece bir kere tool'ları karaktere geçir ve equip et
     if not toolsEquipped then
         for _, tool in pairs(Backpack:GetChildren()) do
             if tool:IsA("Tool") then
                 tool.Parent = Character
-                -- Equip etmek için:
                 local humanoid = Character:FindFirstChildOfClass("Humanoid")
                 if humanoid then
                     humanoid:EquipTool(tool)
