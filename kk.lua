@@ -5,10 +5,29 @@ local player = Players.LocalPlayer
 local Character = player.Character or player.CharacterAdded:Wait()
 local Backpack = player.Backpack
 
--- GUI referanslarını kendi GUI yapına göre düzenle
-local ScreenGui = player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
-local Button = ScreenGui:WaitForChild("Button")
-local TextBox = ScreenGui:WaitForChild("TextBox")
+-- GUI elemanlarını güvenli şekilde alıyoruz
+local function getGuiElements()
+    local screenGui = player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
+    local button = screenGui:FindFirstChild("Button")
+    local textBox = screenGui:FindFirstChild("TextBox")
+
+    if not button then
+        warn("Button bulunamadı!")
+        return nil, nil, screenGui
+    end
+
+    if not textBox then
+        warn("TextBox bulunamadı!")
+        return nil, nil, screenGui
+    end
+
+    return button, textBox, screenGui
+end
+
+local Button, TextBox, ScreenGui = getGuiElements()
+if not Button or not TextBox then
+    return
+end
 
 local targetPlayer = nil
 local targetHead = nil
@@ -25,12 +44,10 @@ local function findBestMatchPlayer(namePart)
 end
 
 local function spamClickDetector(count)
-    -- İstersen buraya kendi spam kontrolünü ekle
     print("Spam Click Detector started with count: ".. tostring(count))
 end
 
 local function fireToolSound()
-    -- İstersen buraya kendi ses oynatma kodunu ekle
     print("Tool sound fired")
 end
 
@@ -40,8 +57,6 @@ local function constantlyUpdateGripPos()
         for _, tool in pairs(Character:GetChildren()) do
             if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
                 local handle = tool.Handle
-                -- targetHead'a göre grip pozisyonunu güncelle
-                -- tool.Grip CFrame olarak ayarlanmalı
                 local relativeCFrame = targetHead.CFrame:ToObjectSpace(handle.CFrame)
                 tool.Grip = relativeCFrame
             end
