@@ -1,4 +1,38 @@
-local toolsEquipped = false  -- sadece 1 kere equip etmek için
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local Character = player.Character or player.CharacterAdded:Wait()
+local Backpack = player.Backpack
+
+-- GUI referanslarını kendi GUI yapına göre düzenle
+local ScreenGui = player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
+local Button = ScreenGui:WaitForChild("Button")
+local TextBox = ScreenGui:WaitForChild("TextBox")
+
+local targetPlayer = nil
+local targetHead = nil
+local toolsEquipped = false
+
+local function findBestMatchPlayer(namePart)
+    namePart = namePart:lower()
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr.Name:lower():find(namePart) then
+            return plr
+        end
+    end
+    return nil
+end
+
+local function spamClickDetector(count)
+    -- İstersen buraya kendi spam kontrolünü ekle
+    print("Spam Click Detector started with count: ".. tostring(count))
+end
+
+local function fireToolSound()
+    -- İstersen buraya kendi ses oynatma kodunu ekle
+    print("Tool sound fired")
+end
 
 local function constantlyUpdateGripPos()
     RunService.Heartbeat:Connect(function()
@@ -6,14 +40,15 @@ local function constantlyUpdateGripPos()
         for _, tool in pairs(Character:GetChildren()) do
             if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
                 local handle = tool.Handle
-                local gripCFrame = handle.CFrame:ToObjectSpace(targetHead.CFrame)
-                tool.GripPos = gripCFrame.Position
+                -- targetHead'a göre grip pozisyonunu güncelle
+                -- tool.Grip CFrame olarak ayarlanmalı
+                local relativeCFrame = targetHead.CFrame:ToObjectSpace(handle.CFrame)
+                tool.Grip = relativeCFrame
             end
         end
     end)
 end
 
--- MouseButton1Click yerine Activated kullanalım ki mobilde de çalışsın
 Button.Activated:Connect(function()
     local inputText = TextBox.Text
     if inputText == "" then
