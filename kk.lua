@@ -5,27 +5,34 @@ local player = Players.LocalPlayer
 local Character = player.Character or player.CharacterAdded:Wait()
 local Backpack = player.Backpack
 
--- GUI elemanlarını güvenli şekilde alıyoruz
-local function getGuiElements()
-    local screenGui = player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
-    local button = screenGui:FindFirstChild("Button")
-    local textBox = screenGui:FindFirstChild("TextBox")
+local ScreenGui = player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
 
-    if not button then
-        warn("Button bulunamadı!")
-        return nil, nil, screenGui
-    end
-
-    if not textBox then
-        warn("TextBox bulunamadı!")
-        return nil, nil, screenGui
-    end
-
-    return button, textBox, screenGui
+-- GUI içeriğini yazdır, isimleri kontrol et
+print("ScreenGui içeriği:")
+for _, child in pairs(ScreenGui:GetChildren()) do
+    print(child.Name, child.ClassName)
 end
 
-local Button, TextBox, ScreenGui = getGuiElements()
-if not Button or not TextBox then
+-- Button ve TextBox arama fonksiyonu
+local function findChildByClassName(parent, className)
+    for _, child in pairs(parent:GetChildren()) do
+        if child.ClassName == className then
+            return child
+        end
+    end
+    return nil
+end
+
+-- Button ve TextBox'u bul
+local Button = ScreenGui:FindFirstChild("Button") or findChildByClassName(ScreenGui, "TextButton")
+local TextBox = ScreenGui:FindFirstChild("TextBox") or findChildByClassName(ScreenGui, "TextBox")
+
+if not Button then
+    warn("Button bulunamadı. Lütfen GUI içinde 'Button' veya 'TextButton' isimli bir nesne olduğundan emin ol.")
+    return
+end
+if not TextBox then
+    warn("TextBox bulunamadı. Lütfen GUI içinde 'TextBox' isimli bir nesne olduğundan emin ol.")
     return
 end
 
