@@ -1,114 +1,81 @@
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+local LP = Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+local Mouse = LP:GetMouse()
 
-local player = Players.LocalPlayer
-local Character = player.Character or player.CharacterAdded:Wait()
-local Backpack = player.Backpack
-
-local ScreenGui = player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
-
--- GUI içeriğini yazdır, isimleri kontrol et
-print("ScreenGui içeriği:")
-for _, child in pairs(ScreenGui:GetChildren()) do
-    print(child.Name, child.ClassName)
+-- Titreşim efekti için rastgele küçük pozisyon kaydırması
+local function randomOffset(magnitude)
+	return Vector3.new(
+		math.random(-magnitude, magnitude),
+		math.random(-magnitude, magnitude),
+		math.random(-magnitude, magnitude)
+	) * 0.1
 end
 
--- Button ve TextBox arama fonksiyonu
-local function findChildByClassName(parent, className)
-    for _, child in pairs(parent:GetChildren()) do
-        if child.ClassName == className then
-            return child
-        end
-    end
-    return nil
+-- Tool'ları bul
+local function getHeldTools()
+	local tools = {}
+	for _, tool in ipairs(LP.Character:GetChildren()) do
+		if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
+			table.insert(tools, tool)
+		end
+	end
+	return tools
 end
 
--- Button ve TextBox'u bul
-local Button = ScreenGui:FindFirstChild("Button") or findChildByClassName(ScreenGui, "TextButton")
-local TextBox = ScreenGui:FindFirstChild("TextBox") or findChildByClassName(ScreenGui, "TextBox")
+-- Tool'ların Handle'larını hedef oyuncunun önüne titreşimli yerleştir
+local function placeToolsInFrontOfPlayer(targetPlayer)
+	local targetChar = targetPlayer.Character
+	if not targetChar then return end
 
-if not Button then
-    warn("Button bulunamadı. Lütfen GUI içinde 'Button' veya 'TextButton' isimli bir nesne olduğundan emin ol.")
-    return
-end
-if not TextBox then
-    warn("TextBox bulunamadı. Lütfen GUI içinde 'TextBox' isimli bir nesne olduğundan emin ol.")
-    return
-end
+	local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
+	if not targetHRP then return end
 
-local targetPlayer = nil
-local targetHead = nil
-local toolsEquipped = false
+	local frontPos = targetHRP.CFrame * CFrame.new(0, 0, -3)
 
-local function findBestMatchPlayer(namePart)
-    namePart = namePart:lower()
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr.Name:lower():find(namePart) then
-            return plr
-        end
-    end
-    return nil
+	local tools = getHeldTools()
+	for _, tool in ipairs(tools) do
+		local handle = tool:FindFirstChild("Handle")
+		if handle then
+			task.spawn(function()
+				for i = 1, 15 do
+					handle.CFrame = frontPos + randomOffset(5)
+					task.wait(0.05)
+				end
+			end)
+		end
+	end
 end
 
-local function spamClickDetector(count)
-    print("Spam Click Detector started with count: ".. tostring(count))
-end
+-- PC Tıklama
+Mouse.Button1Down:Connect(function()
+	local target = Mouse.Target
+	if target then
+		local model = target:FindFirstAncestorOfClass("Model")
+		local player = Players:GetPlayerFromCharacter(model)
+		if player and player ~= LP then
+			placeToolsInFrontOfPlayer(player)
+		end
+	end
+end)
 
-local function fireToolSound()
-    print("Tool sound fired")
-end
+-- Mobil Dokunma
+UIS.TouchTap:Connect(function(touches)
+	local touch = touches[1]
+	if not touch then return end
 
-local function constantlyUpdateGripPos()
-    RunService.Heartbeat:Connect(function()
-        if not targetHead then return end
-        for _, tool in pairs(Character:GetChildren()) do
-            if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
-                local handle = tool.Handle
-                local relativeCFrame = targetHead.CFrame:ToObjectSpace(handle.CFrame)
-                tool.Grip = relativeCFrame
-            end
-        end
-    end)
-end
+	local cam = workspace.CurrentCamera
+	local ray = cam:ViewportPointToRay(touch.Position.X, touch.Position.Y)
+	local raycast = workspace:Raycast(ray.Origin, ray.Direction * 500)
 
-Button.Activated:Connect(function()
-    local inputText = TextBox.Text
-    if inputText == "" then
-        warn("Lütfen hedef oyuncu adının bir kısmını yaz.")
-        return
-    end
-
-    targetPlayer = findBestMatchPlayer(inputText)
-    if not targetPlayer then
-        warn("Hedef oyuncu bulunamadı.")
-        return
-    end
-
-    if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("Head") then
-        warn("Hedef oyuncunun karakteri veya kafası yok.")
-        return
-    end
-
-    targetHead = targetPlayer.Character.Head
-
-    if not toolsEquipped then
-        for _, tool in pairs(Backpack:GetChildren()) do
-            if tool:IsA("Tool") then
-                tool.Parent = Character
-                local humanoid = Character:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    humanoid:EquipTool(tool)
-                end
-            end
-        end
-        toolsEquipped = true
-    end
-
-    spamClickDetector(10)
-    fireToolSound()
-    constantlyUpdateGripPos()
-
-    print("İşlem başlatıldı. Hedef oyuncu:", targetPlayer.Name)
-
-    ScreenGui.Enabled = false
+	if raycast then
+		local target = raycast.Instance
+		if target then
+			local model = target:FindFirstAncestorOfClass("Model")
+			local player = Players:GetPlayerFromCharacter(model)
+			if player and player ~= LP then
+				placeToolsInFrontOfPlayer(player)
+			end
+		end
+	end
 end)
