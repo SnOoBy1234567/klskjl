@@ -7,23 +7,21 @@ local remotes = ReplicatedStorage:WaitForChild("Remotes")
 local wearRemote = remotes:WaitForChild("Wear")
 
 local toolName = "Ban Hammer"
+local lastEquipped = false
 
-local function onUnequipped(tool)
-    if tool.Name == toolName then
-        wearRemote:InvokeServer(unpack(args))
+while true do
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local tool = humanoid and humanoid:FindFirstChildOfClass("Tool")
+    
+    if tool and tool.Name == toolName then
+        lastEquipped = true
+    else
+        if lastEquipped == true then
+            -- Tool bırakıldıysa remote çağr
+            wearRemote:InvokeServer(unpack(args))
+            lastEquipped = false
+        end
     end
+    wait(0.2)
 end
-
--- Karakter ve araç hazır olduğunda
-local function setupCharacter(character)
-    local humanoid = character:WaitForChild("Humanoid")
-    humanoid.ToolUnequipped:Connect(onUnequipped)
-end
-
--- Mevcut karakter için setup
-if player.Character then
-    setupCharacter(player.Character)
-end
-
--- Karakter değiştiğinde setup yap
-player.CharacterAdded:Connect(setupCharacter)
