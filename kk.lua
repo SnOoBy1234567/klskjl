@@ -105,13 +105,13 @@ mouse.Button1Down:Connect(function()
             local bav = Instance.new("BodyAngularVelocity")
             bav.AngularVelocity = Vector3.new(0, 500, 0) -- Hızlı dönüş
             bav.MaxTorque = Vector3.new(0, math.huge, 0)
-            bav.P = 3000
+            bav.P = 88888888888888888888
             bav.Name = "UltraSpin"
             bav.Parent = rootPart
 
             -- Yukarı itme: BodyForce (çok güçlü)
             local force = Instance.new("BodyForce")
-            force.Force = Vector3.new(0, 70000, 0) + Vector3.new(0, rootPart.AssemblyMass * workspace.Gravity, 0)
+            force.Force = Vector3.new(0, 999999999, 0) + Vector3.new(0, rootPart.AssemblyMass * workspace.Gravity, 0)
             force.Name = "UltraLift"
             force.Parent = rootPart
 
