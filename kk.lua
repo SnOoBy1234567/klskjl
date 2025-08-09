@@ -24,7 +24,7 @@ local imageGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui")
 imageGui.Name = "BigImageGui"
 
 local imageLabel = Instance.new("ImageLabel", imageGui)
-imageLabel.Size = UDim2.new(0, 280, 0, 280) -- Büyük boyut
+imageLabel.Size = UDim2.new(0, 280, 0, 250) -- Büyük boyut
 imageLabel.Position = UDim2.new(0, 10, 1, -310) -- Sol alt
 imageLabel.BackgroundTransparency = 1
 imageLabel.Image = "rbxassetid://75927467572889"
